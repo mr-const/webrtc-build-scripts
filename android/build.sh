@@ -159,6 +159,11 @@ function wrX86_64() {
     echo "x86_64 Build"
 }
 
+prepare_gn_files() {
+	echo Generating build files for Android $WEBRTC_ARCH
+	create_directory_if_not_found "$WEBRTC_ROOT/src/$ARCH_OUT/$BUILD_TYPE"
+	gn gen "$WEBRTC_ROOT/src/$ARCH_OUT/$BUILD_TYPE" --args=\'target_os=\"android\" target_cpu=\"$WEBRTC_ARCH\"\'
+}
 
 # Setup our defines for the build
 prepare_gyp_defines() {
@@ -297,18 +302,18 @@ get_webrtc() {
 # Updates webrtc and builds apprtc
 build_apprtc() {
     export WEBRTC_ARCH=armv7
-    prepare_gyp_defines &&
+    prepare_gn_files &&
     execute_build
 
     export WEBRTC_ARCH=armv8
-    prepare_gyp_defines &&
+    prepare_gn_files &&
     execute_build
 
     export WEBRTC_ARCH=x86
-    prepare_gyp_defines &&
+    prepare_gn_files &&
     execute_build
 
     export WEBRTC_ARCH=x86_64
-    prepare_gyp_defines &&
+    prepare_gn_files &&
     execute_build
 }
