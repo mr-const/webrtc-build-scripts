@@ -160,9 +160,10 @@ function wrX86_64() {
 }
 
 prepare_gn_files() {
-	echo Generating build files for Android $WEBRTC_ARCH
+	echo "Generating build files for Android $WEBRTC_ARCH"
 	create_directory_if_not_found "$WEBRTC_ROOT/src/$ARCH_OUT/$BUILD_TYPE"
-	gn gen "$WEBRTC_ROOT/src/$ARCH_OUT/$BUILD_TYPE" --args=\'target_os=\"android\" target_cpu=\"$WEBRTC_ARCH\"\'
+	gn gen $ARCH_OUT/$BUILD_TYPE --args="target_os=\"android\" target_cpu=\"$WEBRTC_ARCH\""
+	echo $ARCH_OUT/$BUILD_TYPE --args="target_os=\"android\" target_cpu=\"$WEBRTC_ARCH\""
 }
 
 # Setup our defines for the build
@@ -213,11 +214,11 @@ execute_build() {
     then
         ARCH="x86_64"
         STRIP="$ANDROID_TOOLCHAINS/x86_64-4.9/prebuilt/linux-x86_64/bin/x86_64-linux-android-strip"
-    elif [ "$WEBRTC_ARCH" = "armv7" ] ;
+    elif [ "$WEBRTC_ARCH" = "arm" ] ;
     then
         ARCH="armeabi-v7a"
         STRIP="$ANDROID_TOOLCHAINS/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-strip"
-    elif [ "$WEBRTC_ARCH" = "armv8" ] ;
+    elif [ "$WEBRTC_ARCH" = "arm64" ] ;
     then
         ARCH="arm64-v8a"
         STRIP="$ANDROID_TOOLCHAINS/aarch64-linux-android-4.9/prebuilt/linux-x86_64/bin/aarch64-linux-android-strip"
@@ -232,6 +233,7 @@ execute_build() {
 
     ARCH_OUT="out_android_${ARCH}"
     REVISION_NUM=`get_webrtc_revision`
+    prepare_gn_files
     echo "Build ${WEBRTC_TARGET} in $BUILD_TYPE (arch: ${WEBRTC_ARCH:-arm})"
     exec_ninja "$ARCH_OUT/$BUILD_TYPE"
     
@@ -301,19 +303,20 @@ get_webrtc() {
 
 # Updates webrtc and builds apprtc
 build_apprtc() {
-    export WEBRTC_ARCH=armv7
-    prepare_gn_files &&
+    DIR=`pwd`
+    cd "$WEBRTC_ROOT/src"
+
+    export WEBRTC_ARCH=arm
     execute_build
 
-    export WEBRTC_ARCH=armv8
-    prepare_gn_files &&
+    export WEBRTC_ARCH=arm64
     execute_build
 
     export WEBRTC_ARCH=x86
-    prepare_gn_files &&
     execute_build
 
     export WEBRTC_ARCH=x86_64
-    prepare_gn_files &&
     execute_build
+
+    cd "$DIR"
 }
